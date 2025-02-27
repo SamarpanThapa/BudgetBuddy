@@ -18,6 +18,37 @@ export const useExpenseStore = defineStore('expenses', {
   }),
 
   actions: {
+    initializeStore() {
+      try {
+        // Ensure expenses is an array
+        if (!Array.isArray(this.expenses)) {
+          this.expenses = []
+        }
+        
+        // Ensure recurring expenses is an array
+        if (!Array.isArray(this.recurringExpenses)) {
+          this.recurringExpenses = []
+        }
+
+        // Ensure custom categories is an array
+        if (!Array.isArray(this.customCategories)) {
+          this.customCategories = []
+        }
+
+        // Process any recurring expenses
+        this.processRecurringExpenses()
+        
+        // Save the initialized state
+        this.saveToLocalStorage()
+      } catch (error) {
+        console.error('Error initializing expense store:', error)
+        // Reset to safe defaults
+        this.expenses = []
+        this.recurringExpenses = []
+        this.customCategories = []
+      }
+    },
+
     addExpense(expense) {
       const newExpense = {
         ...expense,
@@ -153,12 +184,41 @@ export const useExpenseStore = defineStore('expenses', {
     },
 
     expensesByCategory: (state) => {
-      return state.allCategories.map(category => ({
-        ...category,
-        total: state.expenses
-          .filter(expense => expense.categoryId === category.id)
-          .reduce((sum, expense) => sum + expense.amount, 0)
-      }))
+      try {
+        if (!Array.isArray(state.expenses)) {
+          console.error('Expenses is not an array')
+          return []
+        }
+
+        if (!Array.isArray(state.allCategories)) {
+          console.error('Categories is not an array')
+          return []
+        }
+
+        return state.allCategories.map(category => {
+          if (!category || typeof category.id === 'undefined') {
+            console.error('Invalid category:', category)
+            return null
+          }
+
+          const categoryExpenses = state.expenses.filter(expense => 
+            expense && expense.categoryId === category.id
+          )
+
+          const total = categoryExpenses.reduce((sum, expense) => {
+            const amount = expense?.amount || 0
+            return sum + (typeof amount === 'number' ? amount : 0)
+          }, 0)
+
+          return {
+            ...category,
+            total: parseFloat(total.toFixed(2))
+          }
+        }).filter(Boolean) // Remove any null entries
+      } catch (error) {
+        console.error('Error in expensesByCategory getter:', error)
+        return []
+      }
     },
 
     weeklyExpenses: (state) => {

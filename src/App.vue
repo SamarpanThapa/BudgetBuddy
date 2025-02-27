@@ -2,11 +2,17 @@
 import { RouterView } from 'vue-router'
 import { onMounted } from 'vue'
 import { useSettingsStore } from './stores/settings'
+import { useExpenseStore } from './stores/expenses'
+import { useBudgetStore } from './stores/budget'
 
 const settingsStore = useSettingsStore()
+const expenseStore = useExpenseStore()
+const budgetStore = useBudgetStore()
 
 onMounted(() => {
   settingsStore.initializeSettings()
+  expenseStore.initializeStore()
+  budgetStore.checkBudgetAlerts()
 })
 </script>
 

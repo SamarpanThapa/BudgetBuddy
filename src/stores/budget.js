@@ -6,6 +6,7 @@ export const useBudgetStore = defineStore('budget', {
     budgets: JSON.parse(localStorage.getItem('budgets')) || [],
     eventBudgets: JSON.parse(localStorage.getItem('eventBudgets')) || [],
     recurringIncome: JSON.parse(localStorage.getItem('recurringIncome')) || [],
+    income: JSON.parse(localStorage.getItem('income')) || [],
     monthlyIncome: JSON.parse(localStorage.getItem('monthlyIncome')) || 0,
     savingsGoal: JSON.parse(localStorage.getItem('savingsGoal')) || 0,
     alerts: JSON.parse(localStorage.getItem('budgetAlerts')) || [],
@@ -211,6 +212,7 @@ export const useBudgetStore = defineStore('budget', {
       localStorage.setItem('budgets', JSON.stringify(this.budgets))
       localStorage.setItem('eventBudgets', JSON.stringify(this.eventBudgets))
       localStorage.setItem('recurringIncome', JSON.stringify(this.recurringIncome))
+      localStorage.setItem('income', JSON.stringify(this.income))
       localStorage.setItem('monthlyIncome', JSON.stringify(this.monthlyIncome))
       localStorage.setItem('savingsGoal', JSON.stringify(this.savingsGoal))
       localStorage.setItem('budgetAlerts', JSON.stringify(this.alerts))
@@ -221,32 +223,89 @@ export const useBudgetStore = defineStore('budget', {
       this.budgets = []
       this.eventBudgets = []
       this.recurringIncome = []
+      this.income = []
       this.monthlyIncome = 0
       this.savingsGoal = 0
       this.alerts = []
       this.saveToLocalStorage()
+    },
+
+    addIncome(income) {
+      try {
+        const newIncome = {
+          ...income,
+          id: Date.now(),
+          date: new Date().toISOString(),
+          createdAt: new Date().toISOString()
+        }
+        this.income.push(newIncome)
+        this.updateMonthlyIncome()
+        this.saveToLocalStorage()
+        return newIncome
+      } catch (error) {
+        console.error('Error adding income:', error)
+        return null
+      }
+    },
+
+    updateIncome(incomeId, updatedData) {
+      try {
+        const index = this.income.findIndex(i => i.id === incomeId)
+        if (index !== -1) {
+          this.income[index] = { ...this.income[index], ...updatedData }
+          this.updateMonthlyIncome()
+          this.saveToLocalStorage()
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('Error updating income:', error)
+        return false
+      }
+    },
+
+    removeIncome(incomeId) {
+      try {
+        this.income = this.income.filter(i => i.id !== incomeId)
+        this.updateMonthlyIncome()
+        this.saveToLocalStorage()
+        return true
+      } catch (error) {
+        console.error('Error removing income:', error)
+        return false
+      }
     }
   },
 
   getters: {
     currentBiweeklyBudget: (state) => {
-      const now = new Date()
-      return state.budgets
-        .filter(budget => budget.type === 'biweekly')
-        .find(budget => {
-          const startDate = new Date(budget.startDate)
-          const endDate = new Date(startDate)
-          endDate.setDate(endDate.getDate() + 14)
-          return now >= startDate && now <= endDate
-        })
+      try {
+        const now = new Date()
+        return state.budgets
+          .filter(budget => budget.type === 'biweekly')
+          .find(budget => {
+            const startDate = new Date(budget.startDate)
+            const endDate = new Date(startDate)
+            endDate.setDate(endDate.getDate() + 14)
+            return now >= startDate && now <= endDate
+          })
+      } catch (error) {
+        console.error('Error getting current biweekly budget:', error)
+        return null
+      }
     },
 
     activeEventBudgets: (state) => {
-      const now = new Date()
-      return state.eventBudgets.filter(event => {
-        const endDate = new Date(event.endDate)
-        return endDate >= now
-      })
+      try {
+        const now = new Date()
+        return state.eventBudgets.filter(event => {
+          const endDate = new Date(event.endDate)
+          return endDate >= now
+        })
+      } catch (error) {
+        console.error('Error getting active event budgets:', error)
+        return []
+      }
     },
 
     upcomingEventBudgets: (state) => {
@@ -289,6 +348,40 @@ export const useBudgetStore = defineStore('budget', {
       return state.alerts.filter(alert => !alert.read)
     },
 
-    totalMonthlyIncome: (state) => state.monthlyIncome
+    totalMonthlyIncome: (state) => {
+      try {
+        return parseFloat(state.monthlyIncome.toFixed(2)) || 0
+      } catch (error) {
+        console.error('Error getting total monthly income:', error)
+        return 0
+      }
+    },
+
+    recentIncome: (state) => {
+      try {
+        return state.income
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .slice(0, 5)
+      } catch (error) {
+        console.error('Error getting recent income:', error)
+        return []
+      }
+    },
+
+    monthlyIncomeTransactions: (state) => {
+      try {
+        const now = new Date()
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+        const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+        
+        return state.income.filter(income => {
+          const incomeDate = new Date(income.date)
+          return incomeDate >= firstDayOfMonth && incomeDate <= lastDayOfMonth
+        })
+      } catch (error) {
+        console.error('Error getting monthly income transactions:', error)
+        return []
+      }
+    }
   }
 }) 
