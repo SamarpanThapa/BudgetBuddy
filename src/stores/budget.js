@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { useExpenseStore } from './expenses'
+import { useNotificationStore } from './notifications'
 
 export const useBudgetStore = defineStore('budget', {
   state: () => ({
@@ -144,45 +145,22 @@ export const useBudgetStore = defineStore('budget', {
     },
 
     checkBudgetAlerts() {
-      const expenseStore = useExpenseStore()
-      
-      // Check biweekly budget
+      const notificationStore = useNotificationStore()
       const currentBudget = this.currentBiweeklyBudget
-      if (currentBudget) {
-        const spentPercentage = (currentBudget.spent / currentBudget.amount) * 100
-        if (spentPercentage >= this.alertThreshold && !this.hasAlertForBudget(currentBudget.id)) {
-          this.addAlert({
-            type: 'budget',
-            budgetId: currentBudget.id,
-            message: `You've spent ${spentPercentage.toFixed(1)}% of your biweekly budget`,
-            severity: spentPercentage >= 100 ? 'high' : 'medium'
-          })
-        }
-      }
 
-      // Check event budgets
-      this.eventBudgets.forEach(event => {
-        const spentPercentage = (event.spent / event.budget) * 100
-        if (spentPercentage >= this.alertThreshold && !this.hasAlertForEvent(event.id)) {
-          this.addAlert({
-            type: 'event',
-            eventId: event.id,
-            message: `You've spent ${spentPercentage.toFixed(1)}% of your budget for ${event.name}`,
-            severity: spentPercentage >= 100 ? 'high' : 'medium'
-          })
-        }
+      if (!currentBudget) return
+
+      currentBudget.categories.forEach(category => {
+        const spent = this.getCategorySpent(category.id)
+        notificationStore.checkBudgetAlerts(category.id, spent, category.amount)
       })
+    },
 
-      // Check monthly spending vs income
-      const monthlyExpenses = expenseStore.monthlyExpenses.reduce((total, exp) => total + exp.amount, 0)
-      const spendingPercentage = (monthlyExpenses / this.monthlyIncome) * 100
-      if (spendingPercentage >= this.alertThreshold && !this.hasAlertForMonthlySpending()) {
-        this.addAlert({
-          type: 'monthly',
-          message: `You've spent ${spendingPercentage.toFixed(1)}% of your monthly income`,
-          severity: spendingPercentage >= 100 ? 'high' : 'medium'
-        })
-      }
+    getCategorySpent(categoryId) {
+      const expenseStore = useExpenseStore()
+      return Math.abs(expenseStore.expenses
+        ?.filter(e => e.categoryId === categoryId)
+        .reduce((sum, e) => sum + e.amount, 0) || 0)
     },
 
     hasAlertForBudget(budgetId) {
