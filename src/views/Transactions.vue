@@ -11,14 +11,14 @@
           @click="showAddExpense = true"
           class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors duration-200 flex items-center gap-2"
         >
-          <span class="material-icons-outlined text-xl">add_circle</span>
+          <span class="material-icons-outlined text-xl"></span>
           Add Expense
         </button>
         <button 
           @click="showAddIncome = true"
           class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 flex items-center gap-2"
         >
-          <span class="material-icons-outlined text-xl">add_circle</span>
+          <span class="material-icons-outlined text-xl"></span>
           Add Income
         </button>
       </div>

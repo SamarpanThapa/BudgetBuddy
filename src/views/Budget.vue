@@ -12,14 +12,14 @@
             to="/transactions" 
             class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center gap-2"
           >
-            <span class="material-icons-outlined text-xl">receipt_long</span>
+            <span class="material-icons-outlined text-xl"></span>
             View Transactions
           </router-link>
           <button 
             @click="showBudgetSetup = true"
             class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 flex items-center gap-2"
           >
-            <span class="material-icons-outlined text-xl">edit</span>
+            <span class="material-icons-outlined text-xl"></span>
             Adjust Budget
           </button>
         </div>

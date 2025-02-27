@@ -29,7 +29,7 @@
             @click="downloadReport"
             class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 flex items-center gap-2"
           >
-            <span class="material-icons-outlined text-xl">download</span>
+            <span class="material-icons-outlined text-xl"></span>
             Export Report
           </button>
         </div>
