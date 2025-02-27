@@ -1,355 +1,280 @@
 <template>
-  <div class="space-y-6">
-    <!-- Event Budget Summary -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="card transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-amber-50 to-amber-100 shadow-lg hover:shadow-xl">
-        <div class="p-6">
-          <h3 class="text-sm font-medium text-amber-800">Active Events</h3>
-          <p class="mt-2 text-3xl font-bold text-amber-900 tracking-tight">
-            {{ activeEvents.length }}
-          </p>
-          <div class="mt-4 space-y-2">
-            <div class="flex items-center justify-between text-sm text-amber-600">
-              <span>Total Budget</span>
-              <span>{{ formatCurrency(totalEventBudget) }}</span>
-            </div>
-            <div class="flex items-center justify-between text-sm text-amber-600">
-              <span>Spent</span>
-              <span>{{ formatCurrency(totalEventSpent) }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-lg hover:shadow-xl">
-        <div class="p-6">
-          <h3 class="text-sm font-medium text-emerald-800">Upcoming Events</h3>
-          <p class="mt-2 text-3xl font-bold text-emerald-900 tracking-tight">
-            {{ upcomingEvents.length }}
-          </p>
-          <div class="mt-4">
-            <div class="text-sm text-emerald-600">
-              Next event: {{ nextEventName }}
-            </div>
-            <div class="text-sm text-emerald-600">
-              Starting in {{ daysUntilNextEvent }} days
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-violet-50 to-violet-100 shadow-lg hover:shadow-xl">
-        <div class="p-6">
-          <h3 class="text-sm font-medium text-violet-800">Completed Events</h3>
-          <p class="mt-2 text-3xl font-bold text-violet-900 tracking-tight">
-            {{ completedEvents.length }}
-          </p>
-          <div class="mt-4">
-            <div class="text-sm text-violet-600">
-              Last event: {{ lastEventName }}
-            </div>
-            <div class="text-sm text-violet-600">
-              {{ lastEventStatus }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add Event Budget -->
-    <div class="card shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h3 class="text-lg font-medium text-gray-900">Event Budget</h3>
-            <p class="mt-1 text-sm text-gray-500">Plan and track your event expenses</p>
-          </div>
-          <button @click="showForm = !showForm" class="btn-primary">
-            {{ showForm ? 'Hide Form' : 'Add Event' }}
-          </button>
-        </div>
-
-        <Transition name="slide">
-          <form v-if="showForm" @submit.prevent="handleSubmit" class="space-y-6">
-            <div class="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
-              <div class="sm:col-span-2">
-                <label class="block text-sm font-medium text-gray-700">Event Name</label>
-                <input
-                  type="text"
-                  v-model="form.name"
-                  class="input-field"
-                  placeholder="Enter event name"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Start Date</label>
-                <input
-                  type="date"
-                  v-model="form.startDate"
-                  class="input-field"
-                  :min="today"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700">End Date</label>
-                <input
-                  type="date"
-                  v-model="form.endDate"
-                  class="input-field"
-                  :min="form.startDate"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Total Budget</label>
-                <div class="mt-1 relative rounded-md shadow-sm">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span class="text-gray-500 sm:text-sm">$</span>
-                  </div>
-                  <input
-                    type="number"
-                    v-model="form.budget"
-                    min="0"
-                    step="0.01"
-                    class="input-field pl-7"
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Category</label>
-                <select v-model="form.category" class="input-field">
-                  <option value="vacation">Vacation</option>
-                  <option value="wedding">Wedding</option>
-                  <option value="party">Party</option>
-                  <option value="holiday">Holiday</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div class="sm:col-span-2">
-                <label class="block text-sm font-medium text-gray-700">Description</label>
-                <textarea
-                  v-model="form.description"
-                  rows="3"
-                  class="input-field"
-                  placeholder="Add event details"
-                ></textarea>
-              </div>
-            </div>
-
-            <div class="flex justify-end space-x-3">
-              <button
-                type="button"
-                @click="resetForm"
-                class="btn-secondary"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="btn-primary"
-              >
-                Add Event
-              </button>
-            </div>
-          </form>
-        </Transition>
-      </div>
-    </div>
-
+  <div class="space-y-8">
     <!-- Event List -->
-    <div class="card shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-lg font-medium text-gray-900">Event List</h3>
-          <div class="flex items-center space-x-2">
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold">Event Budgets</h2>
+        <button
+          @click="showAddEvent = true"
+          class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        >
+          Add Event
+        </button>
+      </div>
+
+      <!-- Event Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          v-for="event in sortedEvents"
+          :key="event.id"
+          class="bg-gray-50 dark:bg-slate-700 rounded-lg p-4 relative"
+        >
+          <div class="absolute top-2 right-2">
             <button
-              v-for="status in ['all', 'upcoming', 'active', 'completed']"
-              :key="status"
-              @click="filter = status"
-              class="px-3 py-1.5 text-xs font-medium rounded-full"
-              :class="filter === status ? 'bg-blue-100 text-blue-800' : 'text-gray-500 hover:text-gray-700'"
+              @click="deleteEvent(event.id)"
+              class="text-gray-400 hover:text-red-600"
             >
-              {{ status.charAt(0).toUpperCase() + status.slice(1) }}
+              ×
             </button>
           </div>
-        </div>
 
-        <TransitionGroup name="list" tag="div" class="space-y-4">
-          <div v-for="event in filteredEvents" :key="event.id"
-               class="group p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-            <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center space-x-4">
-                <div class="flex-shrink-0">
-                  <span class="inline-flex items-center justify-center h-10 w-10 rounded-full"
-                        :class="getEventIconClass(event)">
-                    {{ getEventIcon(event.category) }}
-                  </span>
-                </div>
-                <div>
-                  <p class="text-sm font-medium text-gray-900">{{ event.name }}</p>
-                  <div class="flex items-center text-sm text-gray-500">
-                    <span>{{ event.category }}</span>
-                    <span class="mx-2">•</span>
-                    <span>{{ formatDateRange(event.startDate, event.endDate) }}</span>
-                  </div>
-                </div>
+          <h3 class="text-xl font-semibold mb-2">{{ event.name }}</h3>
+          <div class="space-y-2">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              {{ formatDate(event.date) }}
+            </p>
+            <div class="flex justify-between text-sm">
+              <span>Budget:</span>
+              <span class="font-medium">{{ formatCurrency(event.budget) }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span>Spent:</span>
+              <span class="font-medium">{{ formatCurrency(event.spent) }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span>Remaining:</span>
+              <span
+                :class="event.budget - event.spent > 0 ? 'text-green-600' : 'text-red-600'"
+                class="font-medium"
+              >
+                {{ formatCurrency(event.budget - event.spent) }}
+              </span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mt-4">
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  class="h-2.5 rounded-full"
+                  :class="getBudgetProgressColor(event.spent / event.budget)"
+                  :style="{ width: \`\${Math.min((event.spent / event.budget) * 100, 100)}%\` }"
+                ></div>
               </div>
-              <div class="flex items-center space-x-4">
-                <div class="text-right">
-                  <p class="text-sm font-medium text-gray-900">
-                    {{ formatCurrency(event.spent) }} / {{ formatCurrency(event.budget) }}
-                  </p>
-                  <p class="text-xs text-gray-500">
-                    {{ (event.spent / event.budget * 100).toFixed(1) }}% spent
-                  </p>
-                </div>
-                <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <button
-                    @click="addExpense(event)"
-                    class="text-gray-400 hover:text-blue-600 transition-colors duration-150"
-                  >
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                  </button>
-                  <button
-                    @click="editEvent(event)"
-                    class="text-gray-400 hover:text-blue-600 transition-colors duration-150"
-                  >
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button
-                    @click="deleteEvent(event)"
-                    class="text-gray-400 hover:text-red-600 transition-colors duration-150"
-                  >
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
+              <div class="flex justify-between mt-1 text-xs text-gray-600 dark:text-gray-400">
+                <span>{{ Math.round((event.spent / event.budget) * 100) }}% spent</span>
+                <span>{{ getDaysUntilEvent(event.date) }}</span>
               </div>
             </div>
 
-            <div class="w-full bg-gray-200 rounded-full h-2">
-              <div
-                class="h-2 rounded-full transition-all duration-500 ease-out"
-                :class="getProgressColor(event.spent / event.budget * 100)"
-                :style="{ width: `${Math.min(event.spent / event.budget * 100, 100)}%` }"
-              ></div>
+            <!-- Action Buttons -->
+            <div class="flex space-x-2 mt-4">
+              <button
+                @click="showAddExpense(event)"
+                class="flex-1 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              >
+                Add Expense
+              </button>
+              <button
+                @click="showEventDetails(event)"
+                class="flex-1 px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
+              >
+                Details
+              </button>
             </div>
           </div>
-        </TransitionGroup>
+        </div>
+      </div>
+    </div>
 
-        <!-- Empty State -->
-        <div v-if="filteredEvents.length === 0" class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No events found</h3>
-          <p class="mt-1 text-sm text-gray-500">
-            Get started by creating a new event budget.
-          </p>
-          <div class="mt-6">
+    <!-- Add Event Modal -->
+    <div v-if="showAddEvent" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6">
+        <h2 class="text-2xl font-semibold mb-4">Add Event</h2>
+        
+        <form @submit.prevent="handleAddEvent" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Event Name</label>
+            <input
+              v-model="newEvent.name"
+              type="text"
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Date</label>
+            <input
+              v-model="newEvent.date"
+              type="date"
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Budget</label>
+            <input
+              v-model="newEvent.budget"
+              type="number"
+              step="0.01"
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Description</label>
+            <textarea
+              v-model="newEvent.description"
+              rows="3"
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            ></textarea>
+          </div>
+
+          <div class="flex justify-end space-x-3">
             <button
               type="button"
-              @click="showForm = true"
-              class="btn-primary"
+              @click="showAddEvent = false"
+              class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700"
             >
               Add Event
             </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Event Details Modal -->
+    <div v-if="selectedEvent" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full p-6">
+        <div class="flex justify-between items-start mb-4">
+          <h2 class="text-2xl font-semibold">{{ selectedEvent.name }}</h2>
+          <button @click="selectedEvent = null" class="text-gray-400 hover:text-gray-600">×</button>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Event Info -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">Date</h3>
+              <p class="mt-1">{{ formatDate(selectedEvent.date) }}</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">Budget</h3>
+              <p class="mt-1">{{ formatCurrency(selectedEvent.budget) }}</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">Spent</h3>
+              <p class="mt-1">{{ formatCurrency(selectedEvent.spent) }}</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">Remaining</h3>
+              <p
+                class="mt-1"
+                :class="selectedEvent.budget - selectedEvent.spent > 0 ? 'text-green-600' : 'text-red-600'"
+              >
+                {{ formatCurrency(selectedEvent.budget - selectedEvent.spent) }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Expense List -->
+          <div>
+            <h3 class="text-lg font-medium mb-3">Expenses</h3>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead>
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr v-for="expense in selectedEvent.expenses" :key="expense.id">
+                    <td class="px-6 py-4 whitespace-nowrap">{{ formatDate(expense.date) }}</td>
+                    <td class="px-6 py-4">{{ expense.description }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(expense.amount) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <button
+                        @click="deleteExpense(selectedEvent.id, expense.id)"
+                        class="text-red-600 hover:text-red-800"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Add Expense Modal -->
-    <Transition name="modal">
-      <div v-if="showExpenseModal" class="fixed inset-0 z-10 overflow-y-auto">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showExpenseModal = false"></div>
-
-          <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-
-          <div class="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-            <div>
-              <div class="mt-3 text-center sm:mt-5">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">
-                  Add Expense to {{ selectedEvent?.name }}
-                </h3>
-                <div class="mt-4">
-                  <div class="space-y-4">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700">Amount</label>
-                      <div class="mt-1 relative rounded-md shadow-sm">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <span class="text-gray-500 sm:text-sm">$</span>
-                        </div>
-                        <input
-                          type="number"
-                          v-model="expenseForm.amount"
-                          min="0"
-                          step="0.01"
-                          class="input-field pl-7"
-                          placeholder="0.00"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700">Description</label>
-                      <input
-                        type="text"
-                        v-model="expenseForm.description"
-                        class="input-field"
-                        placeholder="Enter expense description"
-                      />
-                    </div>
-
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700">Date</label>
-                      <input
-                        type="date"
-                        v-model="expenseForm.date"
-                        class="input-field"
-                        :min="selectedEvent?.startDate"
-                        :max="selectedEvent?.endDate"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-              <button
-                type="button"
-                class="btn-primary sm:col-start-2"
-                @click="handleExpenseSubmit"
-              >
-                Add Expense
-              </button>
-              <button
-                type="button"
-                class="btn-secondary sm:col-start-1"
-                @click="showExpenseModal = false"
-              >
-                Cancel
-              </button>
-            </div>
+    <div v-if="showExpenseModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6">
+        <h2 class="text-2xl font-semibold mb-4">Add Expense to {{ selectedEventForExpense?.name }}</h2>
+        
+        <form @submit.prevent="handleAddExpense" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Amount</label>
+            <input
+              v-model="newExpense.amount"
+              type="number"
+              step="0.01"
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
           </div>
-        </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Description</label>
+            <input
+              v-model="newExpense.description"
+              type="text"
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Date</label>
+            <input
+              v-model="newExpense.date"
+              type="date"
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div class="flex justify-end space-x-3">
+            <button
+              type="button"
+              @click="showExpenseModal = false"
+              class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+            >
+              Add Expense
+            </button>
+          </div>
+        </form>
       </div>
-    </Transition>
+    </div>
   </div>
 </template>
 
@@ -357,186 +282,33 @@
 import { ref, computed } from 'vue'
 import { useBudgetStore } from '../stores/budget'
 
-const store = useBudgetStore()
-const showForm = ref(false)
-const filter = ref('all')
+const budgetStore = useBudgetStore()
+
+// State
+const showAddEvent = ref(false)
 const showExpenseModal = ref(false)
 const selectedEvent = ref(null)
+const selectedEventForExpense = ref(null)
 
-const today = new Date().toISOString().split('T')[0]
-
-const form = ref({
+const newEvent = ref({
   name: '',
-  startDate: today,
-  endDate: '',
+  date: '',
   budget: '',
-  category: 'other',
   description: ''
 })
 
-const expenseForm = ref({
+const newExpense = ref({
   amount: '',
   description: '',
-  date: today
+  date: new Date().toISOString().split('T')[0]
 })
 
-const activeEvents = computed(() => 
-  store.events.filter(e => {
-    const now = new Date()
-    const start = new Date(e.startDate)
-    const end = new Date(e.endDate)
-    return start <= now && end >= now
-  })
-)
-
-const upcomingEvents = computed(() => 
-  store.events.filter(e => new Date(e.startDate) > new Date())
-)
-
-const completedEvents = computed(() => 
-  store.events.filter(e => new Date(e.endDate) < new Date())
-)
-
-const totalEventBudget = computed(() => 
-  activeEvents.value.reduce((sum, e) => sum + e.budget, 0)
-)
-
-const totalEventSpent = computed(() => 
-  activeEvents.value.reduce((sum, e) => sum + e.spent, 0)
-)
-
-const nextEventName = computed(() => {
-  const next = upcomingEvents.value[0]
-  return next ? next.name : 'No upcoming events'
+// Computed
+const sortedEvents = computed(() => {
+  return [...budgetStore.eventBudgets].sort((a, b) => new Date(a.date) - new Date(b.date))
 })
 
-const daysUntilNextEvent = computed(() => {
-  const next = upcomingEvents.value[0]
-  if (!next) return 0
-  const diff = new Date(next.startDate) - new Date()
-  return Math.ceil(diff / (1000 * 60 * 60 * 24))
-})
-
-const lastEventName = computed(() => {
-  const last = completedEvents.value[completedEvents.value.length - 1]
-  return last ? last.name : 'No completed events'
-})
-
-const lastEventStatus = computed(() => {
-  const last = completedEvents.value[completedEvents.value.length - 1]
-  if (!last) return ''
-  const percentage = (last.spent / last.budget) * 100
-  return percentage <= 100 ? 'Under budget' : 'Over budget'
-})
-
-const filteredEvents = computed(() => {
-  let events = [...store.events]
-  const now = new Date()
-
-  switch (filter.value) {
-    case 'upcoming':
-      events = events.filter(e => new Date(e.startDate) > now)
-      break
-    case 'active':
-      events = events.filter(e => {
-        const start = new Date(e.startDate)
-        const end = new Date(e.endDate)
-        return start <= now && end >= now
-      })
-      break
-    case 'completed':
-      events = events.filter(e => new Date(e.endDate) < now)
-      break
-  }
-
-  return events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
-})
-
-const handleSubmit = () => {
-  if (!form.value.name || !form.value.budget) return
-
-  store.addEvent({
-    ...form.value,
-    budget: parseFloat(form.value.budget),
-    spent: 0,
-    expenses: []
-  })
-
-  resetForm()
-}
-
-const resetForm = () => {
-  form.value = {
-    name: '',
-    startDate: today,
-    endDate: '',
-    budget: '',
-    category: 'other',
-    description: ''
-  }
-  showForm.value = false
-}
-
-const handleExpenseSubmit = () => {
-  if (!expenseForm.value.amount || !selectedEvent.value) return
-
-  store.addEventExpense(selectedEvent.value.id, {
-    ...expenseForm.value,
-    amount: parseFloat(expenseForm.value.amount)
-  })
-
-  showExpenseModal.value = false
-  expenseForm.value = {
-    amount: '',
-    description: '',
-    date: today
-  }
-}
-
-const addExpense = (event) => {
-  selectedEvent.value = event
-  expenseForm.value.date = today
-  showExpenseModal.value = true
-}
-
-const editEvent = (event) => {
-  form.value = { ...event }
-  showForm.value = true
-}
-
-const deleteEvent = (event) => {
-  if (confirm('Are you sure you want to delete this event?')) {
-    store.deleteEvent(event.id)
-  }
-}
-
-const getEventIcon = (category) => {
-  switch (category) {
-    case 'vacation': return '✈️'
-    case 'wedding': return '💒'
-    case 'party': return '🎉'
-    case 'holiday': return '🎄'
-    default: return '📅'
-  }
-}
-
-const getEventIconClass = (event) => {
-  const now = new Date()
-  const start = new Date(event.startDate)
-  const end = new Date(event.endDate)
-
-  if (end < now) return 'bg-gray-100 text-gray-700'
-  if (start > now) return 'bg-blue-100 text-blue-700'
-  return 'bg-green-100 text-green-700'
-}
-
-const getProgressColor = (percentage) => {
-  if (percentage >= 100) return 'bg-red-600'
-  if (percentage >= 90) return 'bg-orange-500'
-  if (percentage >= 75) return 'bg-yellow-500'
-  return 'bg-green-600'
-}
-
+// Methods
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -544,70 +316,84 @@ const formatCurrency = (amount) => {
   }).format(amount)
 }
 
-const formatDateRange = (start, end) => {
-  const startDate = new Date(start).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString()
+}
+
+const getBudgetProgressColor = (percentage) => {
+  if (percentage >= 1) return 'bg-red-600'
+  if (percentage >= 0.8) return 'bg-yellow-600'
+  return 'bg-green-600'
+}
+
+const getDaysUntilEvent = (date) => {
+  const today = new Date()
+  const eventDate = new Date(date)
+  const diffTime = eventDate - today
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays < 0) return 'Past event'
+  if (diffDays === 0) return 'Today'
+  return `${diffDays} days left`
+}
+
+const handleAddEvent = () => {
+  budgetStore.addEventBudget({
+    ...newEvent.value,
+    budget: parseFloat(newEvent.value.budget),
+    spent: 0,
+    expenses: []
   })
-  const endDate = new Date(end).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
-  })
-  return `${startDate} - ${endDate}`
+  showAddEvent.value = false
+  newEvent.value = {
+    name: '',
+    date: '',
+    budget: '',
+    description: ''
+  }
+}
+
+const showAddExpense = (event) => {
+  selectedEventForExpense.value = event
+  showExpenseModal.value = true
+}
+
+const handleAddExpense = () => {
+  if (!selectedEventForExpense.value) return
+
+  const expense = {
+    ...newExpense.value,
+    amount: parseFloat(newExpense.value.amount),
+    id: Date.now()
+  }
+
+  budgetStore.updateEventBudgetSpent(selectedEventForExpense.value.id, expense)
+  showExpenseModal.value = false
+  newExpense.value = {
+    amount: '',
+    description: '',
+    date: new Date().toISOString().split('T')[0]
+  }
+  selectedEventForExpense.value = null
+}
+
+const showEventDetails = (event) => {
+  selectedEvent.value = event
+}
+
+const deleteEvent = (eventId) => {
+  if (confirm('Are you sure you want to delete this event?')) {
+    budgetStore.deleteEventBudget(eventId)
+  }
+}
+
+const deleteExpense = (eventId, expenseId) => {
+  if (confirm('Are you sure you want to delete this expense?')) {
+    budgetStore.deleteEventExpense(eventId, expenseId)
+  }
 }
 </script>
 
 <style scoped>
-.slide-enter-active,
-.slide-leave-active {
-  transition: all 0.3s ease-out;
-}
-
-.slide-enter-from {
-  transform: translateY(-20px);
-  opacity: 0;
-}
-
-.slide-leave-to {
-  transform: translateY(20px);
-  opacity: 0;
-}
-
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.5s ease;
-}
-
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
-}
-
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.card {
-  @apply rounded-xl border border-gray-200 bg-white overflow-hidden;
-}
-
-.input-field {
-  @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm;
-}
-
-.btn-primary {
-  @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
-}
-
-.btn-secondary {
-  @apply inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
-}
+/* Add your styles here */
 </style> 
