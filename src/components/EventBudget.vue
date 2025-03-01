@@ -57,7 +57,8 @@
                 <div
                   class="h-2.5 rounded-full"
                   :class="getBudgetProgressColor(event.spent / event.budget)"
-                  :style="{ width: \`\${Math.min((event.spent / event.budget) * 100, 100)}%\` }"
+                  :style="{ width: Math.min((event.spent / event.budget) * 100, 100) + '%' }"
+
                 ></div>
               </div>
               <div class="flex justify-between mt-1 text-xs text-gray-600 dark:text-gray-400">
